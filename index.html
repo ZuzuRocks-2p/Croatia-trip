@@ -1,0 +1,2067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Croatia Trip Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f4efe6;
+    --paper-dark: #e8e1d3;
+    --ink: #1a1612;
+    --ink-soft: #4a3f35;
+    --ink-muted: #8a7e6f;
+    --accent: #b8502e;
+    --accent-dark: #8f3d22;
+    --sea: #2d5d6b;
+    --sea-light: #4a8599;
+    --gold: #c4962c;
+    --green: #5a7a3e;
+    --line: #c9bfae;
+    --card: #fbf7ee;
+    --shadow: 0 1px 2px rgba(26,22,18,.04), 0 8px 24px -8px rgba(26,22,18,.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Fraunces', Georgia, serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(184,80,46,.04), transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(45,93,107,.05), transparent 40%);
+  }
+
+  /* Subtle paper grain */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: .4;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0 0.06 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    z-index: 1;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 32px 80px;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+  }
+
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: clamp(40px, 6vw, 72px);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    font-variation-settings: "opsz" 144;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 300;
+  }
+
+  .sub {
+    margin-top: 16px;
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 17px;
+  }
+
+  /* Dashboard bar */
+  .dashboard {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    margin-bottom: 40px;
+    overflow: hidden;
+  }
+
+  .stat {
+    background: var(--card);
+    padding: 18px 20px;
+    text-align: center;
+  }
+
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 6px;
+  }
+
+  .stat-value {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+
+  .stat-value.warn { color: var(--accent); }
+  .stat-value.ok { color: var(--green); }
+
+  /* Journey trail */
+  .trail {
+    margin-bottom: 32px;
+    padding: 20px 24px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    min-height: 72px;
+  }
+
+  .trail-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-right: 4px;
+  }
+
+  .trail-stop {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    padding: 6px 12px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+  }
+
+  .trail-stop .nights {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-muted);
+  }
+
+  .trail-arrow {
+    color: var(--ink-muted);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 14px;
+  }
+
+  .trail-mode {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--sea);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 4px 8px;
+    background: rgba(45,93,107,.08);
+    border-radius: 2px;
+  }
+
+  /* Section titles */
+  .section-title {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-top: 8px;
+  }
+
+  .section-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+  }
+
+  .section-name {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 400;
+    font-style: italic;
+    letter-spacing: -0.01em;
+  }
+
+  .section-rule {
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+
+  /* Current location card */
+  .current-loc {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 24px 32px;
+    margin-bottom: 24px;
+    border-radius: 2px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .current-loc h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 32px;
+    letter-spacing: -0.01em;
+  }
+
+  .current-loc h2 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .current-loc .meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(244,239,230,.6);
+  }
+
+  /* Nights picker */
+  .nights-picker {
+    background: var(--card);
+    padding: 20px 24px;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    margin-bottom: 32px;
+  }
+
+  .nights-picker label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .nights-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .nights-btn {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    padding: 10px 20px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all .15s ease;
+  }
+
+  .nights-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .nights-btn.active {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+  }
+
+  /* Option cards */
+  .options {
+    display: grid;
+    gap: 20px;
+  }
+
+  .option {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    padding: 28px 32px;
+    transition: all .2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .option::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--sea-light);
+    transition: width .2s ease;
+  }
+
+  .option:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+
+  .option:hover::before { width: 6px; }
+
+  .option.recommended::before { background: var(--accent); }
+  .option.recommended .rec-badge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: rgba(184,80,46,.08);
+    padding: 4px 10px;
+    border-radius: 2px;
+  }
+
+  .opt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: 16px;
+  }
+
+  .opt-title {
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+  }
+
+  .opt-mode {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--sea);
+    margin-top: 6px;
+  }
+
+  .opt-meta {
+    display: flex;
+    gap: 24px;
+    flex-shrink: 0;
+    text-align: right;
+  }
+
+  .meta-item .val {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  .meta-item .lbl {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-top: 2px;
+  }
+
+  .opt-desc {
+    font-size: 15px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+    margin-bottom: 20px;
+    font-style: italic;
+  }
+
+  .pros-cons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 20px;
+    padding: 16px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .pc-list {
+    list-style: none;
+  }
+
+  .pc-list .pc-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .pc-list.pros .pc-label { color: var(--green); }
+  .pc-list.cons .pc-label { color: var(--accent); }
+
+  .pc-list li {
+    font-size: 14px;
+    line-height: 1.5;
+    padding-left: 16px;
+    position: relative;
+    margin-bottom: 4px;
+    color: var(--ink-soft);
+  }
+
+  .pc-list.pros li::before {
+    content: '+';
+    position: absolute;
+    left: 0;
+    color: var(--green);
+    font-weight: 600;
+  }
+
+  .pc-list.cons li::before {
+    content: '−';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .opt-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .opt-lodging {
+    font-size: 13px;
+    color: var(--ink-muted);
+    font-style: italic;
+  }
+
+  .opt-lodging strong {
+    color: var(--ink-soft);
+    font-style: normal;
+    font-weight: 500;
+  }
+
+  .choose-btn {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    padding: 10px 22px;
+    background: var(--ink);
+    border: 1px solid var(--ink);
+    color: var(--paper);
+    cursor: pointer;
+    border-radius: 2px;
+    letter-spacing: 0.02em;
+    transition: all .15s ease;
+  }
+
+  .choose-btn:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+  }
+
+  .btn-secondary {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--ink-soft);
+    padding: 10px 18px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all .15s ease;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+
+  .btn-primary {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    color: var(--paper);
+    padding: 12px 28px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all .15s ease;
+  }
+
+  .btn-primary:hover {
+    background: var(--accent-dark);
+    border-color: var(--accent-dark);
+  }
+
+  /* Final itinerary */
+  .final {
+    background: var(--card);
+    padding: 48px;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    margin-top: 32px;
+  }
+
+  .final-title {
+    font-family: 'Fraunces', serif;
+    font-size: 48px;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+
+  .final-title em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .final-sub {
+    font-style: italic;
+    color: var(--ink-soft);
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .leg-row {
+    display: grid;
+    grid-template-columns: 60px 1fr auto;
+    gap: 20px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--line);
+    align-items: start;
+  }
+
+  .leg-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    padding-top: 4px;
+  }
+
+  .leg-loc {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    margin-bottom: 4px;
+  }
+
+  .leg-detail {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+
+  .leg-cost {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    color: var(--ink);
+    text-align: right;
+  }
+
+  .leg-cost .sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-muted);
+    letter-spacing: 0.1em;
+    display: block;
+    margin-top: 2px;
+  }
+
+  .final-summary {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 2px solid var(--ink);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+  }
+
+  .sum-item .lbl {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .sum-item .val {
+    font-family: 'Fraunces', serif;
+    font-size: 36px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+
+  .final-actions {
+    margin-top: 40px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .warning {
+    background: rgba(184,80,46,.08);
+    border-left: 3px solid var(--accent);
+    padding: 12px 18px;
+    margin: 20px 0;
+    font-size: 14px;
+    color: var(--ink-soft);
+    font-style: italic;
+    border-radius: 0 2px 2px 0;
+  }
+
+  /* Override and source links */
+  .price-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+
+  .price-primary {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+
+  .price-primary .val {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  .price-primary .val.overridden {
+    color: var(--green);
+  }
+
+  .price-primary .est-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  .price-primary .est-tag.confirmed {
+    color: var(--green);
+  }
+
+  .price-tools {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-top: 4px;
+  }
+
+  .source-link {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--sea);
+    text-decoration: none;
+    padding: 3px 8px;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    transition: all .15s ease;
+    white-space: nowrap;
+  }
+
+  .source-link:hover {
+    border-color: var(--sea);
+    background: rgba(45,93,107,.05);
+  }
+
+  .override-input {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    width: 70px;
+    padding: 3px 6px;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    background: var(--paper);
+    color: var(--ink);
+    text-align: right;
+  }
+
+  .override-input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .override-input.has-value {
+    border-color: var(--green);
+    background: rgba(90,122,62,.05);
+    color: var(--green);
+  }
+
+  .override-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .override-clear {
+    background: none;
+    border: none;
+    color: var(--ink-muted);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0 4px;
+    line-height: 1;
+  }
+
+  .override-clear:hover { color: var(--accent); }
+
+  /* Lodging override row */
+  .lodging-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    background: rgba(244,239,230,.5);
+    border: 1px dashed var(--line);
+    border-radius: 2px;
+    margin-top: 16px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .lodging-controls .label-text {
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+
+  .lodging-controls .label-text strong {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .lodging-tools {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  /* Travel guide / postcard elements */
+  .guide-hero {
+    position: relative;
+    width: 100%;
+    height: 380px;
+    overflow: hidden;
+    border-radius: 2px;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, #2d5d6b 0%, #4a8599 100%);
+  }
+
+  .guide-hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: saturate(1.05) contrast(1.02);
+  }
+
+  .guide-hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(26,22,18,.75), rgba(26,22,18,.1) 50%, transparent);
+    pointer-events: none;
+  }
+
+  .guide-hero-overlay {
+    position: absolute;
+    bottom: 28px;
+    left: 32px;
+    right: 32px;
+    color: var(--paper);
+    z-index: 1;
+  }
+
+  .guide-hero-country {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    opacity: 0.75;
+    margin-bottom: 8px;
+  }
+
+  .guide-hero-name {
+    font-family: 'Fraunces', serif;
+    font-size: 56px;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    font-variation-settings: "opsz" 144;
+  }
+
+  /* Best-for panel */
+  .best-for {
+    background: var(--paper);
+    border-left: 3px solid var(--gold);
+    padding: 14px 20px;
+    margin-bottom: 20px;
+    border-radius: 0 2px 2px 0;
+  }
+
+  .best-for-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  .best-for-text {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 15px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+
+  /* Must-see & do grid */
+  .mustsee-section {
+    margin: 24px 0 8px;
+  }
+
+  .mustsee-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    font-weight: 500;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .mustsee-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+
+  .mustsee-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  .mustsee-card {
+    background: var(--paper);
+    border-radius: 2px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mustsee-img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    display: block;
+    background: var(--paper-dark);
+  }
+
+  .mustsee-body {
+    padding: 12px 14px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mustsee-title {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    line-height: 1.25;
+    margin-bottom: 6px;
+    color: var(--ink);
+  }
+
+  .mustsee-desc {
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--ink-soft);
+  }
+
+  /* Option card — now with hero image */
+  .option .opt-hero {
+    margin: -28px -32px 20px;
+    height: 240px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .option .opt-hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: saturate(1.05);
+  }
+
+  .option .opt-hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 40%, rgba(251,247,238,1));
+    pointer-events: none;
+  }
+
+  .option .opt-hero-caption {
+    position: absolute;
+    bottom: 14px;
+    left: 20px;
+    color: var(--paper);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    text-shadow: 0 1px 3px rgba(0,0,0,.6);
+    z-index: 1;
+  }
+
+  .opt-bestfor {
+    background: rgba(196,150,44,.08);
+    border-left: 2px solid var(--gold);
+    padding: 10px 14px;
+    margin: 12px 0 16px;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    border-radius: 0 2px 2px 0;
+  }
+
+  .opt-bestfor strong {
+    font-family: 'JetBrains Mono', monospace;
+    font-style: normal;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+
+  .opt-mustsee {
+    display: flex;
+    gap: 10px;
+    margin: 12px 0 16px;
+    overflow-x: auto;
+  }
+
+  .opt-mustsee-item {
+    flex: 0 0 140px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .opt-mustsee-item img {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    display: block;
+    background: var(--paper-dark);
+  }
+
+  .opt-mustsee-item .caption {
+    padding: 6px 10px 8px;
+    font-family: 'Fraunces', serif;
+    font-size: 11px;
+    line-height: 1.3;
+    color: var(--ink);
+  }
+
+  @media (max-width: 720px) {
+    .mustsee-grid { grid-template-columns: 1fr; }
+    .guide-hero-name { font-size: 32px; }
+    .container { padding: 32px 20px 60px; }
+    .dashboard { grid-template-columns: 1fr 1fr; }
+    .opt-header { flex-direction: column; }
+    .opt-meta { text-align: left; }
+    .pros-cons { grid-template-columns: 1fr; }
+    .final-summary { grid-template-columns: 1fr; }
+    .leg-row { grid-template-columns: 1fr; }
+    .leg-cost { text-align: left; }
+  }
+
+  @media print {
+    body { background: white; }
+    body::before { display: none; }
+    .controls, .final-actions, header .sub, .dashboard { display: none; }
+    .final { border: none; padding: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container" id="app"></div>
+
+<script>
+/* =========================================================
+   DATA: stops, transport legs, lodging
+   Costs are per-person unless noted. Totals computed for 4.
+   ========================================================= */
+
+const TRAVELERS = 4;
+const TOTAL_NIGHTS = 10;  // July 17-28 = 11 nights; reserve 1 for return flight
+
+const STOPS = {
+  venice: {
+    name: 'Venice',
+    country: 'Italy',
+    blurb: 'A slow-gondola overture before the Adriatic crossing.',
+    bestFor: 'The first act — arriving by plane, decompressing on water, setting the tone for the Adriatic ahead.',
+    heroKeyword: 'Venezia_Rialto_0621.JPG',
+    mustSee: [
+      { title: 'St. Mark\'s Square & Basilica', desc: 'The ceremonial heart of Venice — Byzantine mosaics inside, pigeons and piano cafés outside. Go at dawn to have it nearly to yourselves.', img: "Saint_Mark's_Basilica.jpg" },
+      { title: 'Gondola ride through side canals', desc: 'Touristy, yes, but unforgettable. Negotiate a quieter route away from the Grand Canal — 35 min, around €90 shared by 4.', img: "Gondola_Rialto_-_Hotel_Ca'_Sagredo_-_Grand_Canal_-_Rialto_-_Venice_Italy_Venezia_-_Creative_Commons_by_gnuckx_-_panoramio.jpg" },
+      { title: 'Rialto Bridge at sunset', desc: 'Walk the Rialto and stay for golden hour on the Grand Canal. Aperol spritz at a nearby bacaro is the required move.', img: 'Venezia_Rialto_0621.JPG' },
+    ],
+    lodgingPerNight: 500,
+    lodgingNote: 'Amex FHR — Gritti, Danieli, or St. Regis with $100 credit',
+    lodgingSources: [
+      { label: 'Amex FHR', url: 'https://www.amextravel.com/hotel-search-results?location=Venice%2C%20Italy&programs=FHR' },
+      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Venice%2C+Italy&checkin=2026-07-17&checkout=2026-07-18&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
+    ],
+    fixed: true,
+    position: 'start',
+  },
+  trieste: {
+    name: 'Trieste',
+    country: 'Italy',
+    blurb: 'Hemingway\'s seafront city — faded Habsburg grandeur, great coffee.',
+    bestFor: 'Travelers who love literary, faded-empire cities with excellent coffee and almost no crowds.',
+    heroKeyword: 'Trieste-Panorama.jpg',
+    mustSee: [
+      { title: 'Piazza Unità d\'Italia', desc: 'The largest sea-facing square in Europe — Habsburg architecture opening right to the Adriatic. Pure drama at sunset.', img: "Trieste-Piazza_Unità_d'Italia-DSCF1423.JPG" },
+      { title: 'Miramare Castle', desc: 'A white fairytale castle on a cliff, built by Archduke Maximilian. Gardens are free; inside tour is €12.', img: 'Rocks_at_Miramare_Castle.JPG' },
+      { title: 'Historic literary cafés', desc: 'Caffè San Marco and Antico Caffè degli Specchi — Joyce and Svevo drank here. Order a capo in b (cappuccino in a glass).', img: '20140402_sanmarco_gallery_005_web.jpg' },
+    ],
+    lodgingPerNight: 250,
+    lodgingNote: 'Boutique hotel or apartment',
+    lodgingSources: [
+      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Trieste%2C+Italy&checkin=2026-07-18&checkout=2026-07-19&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
+      { label: 'Airbnb', url: 'https://www.airbnb.com/s/Trieste--Italy/homes?checkin=2026-07-18&checkout=2026-07-19&adults=2&children=2' },
+    ],
+  },
+  pula: {
+    name: 'Pula',
+    country: 'Croatia (Istria)',
+    blurb: 'Roman amphitheater on the sea; the gateway to Istrian wine country.',
+    bestFor: 'History buffs and teens who think ruins are boring — until they\'re standing inside a 2,000-year-old arena on the beach.',
+    heroKeyword: 'Pula_Arena.jpg',
+    mustSee: [
+      { title: 'Pula Arena', desc: 'One of the six largest surviving Roman amphitheaters — and the only one with all four side towers still standing. Summer concerts happen inside.', img: 'Arena_Pula.jpg' },
+      { title: 'Brijuni Islands day trip', desc: 'National park archipelago — Roman ruins, dinosaur footprints, and Tito\'s former safari zoo. Boat from Fažana, 15 min.', img: 'National_Park_Brijuni.jpg' },
+      { title: 'Cape Kamenjak beaches', desc: 'Wild, rocky beach peninsula south of Pula. No development, cliff jumping, dinosaur footprints at Pinižule. Rent a car or scooter.', img: 'Kamenjak-coast.JPG' },
+    ],
+    lodgingPerNight: 220,
+    lodgingNote: 'Boutique hotel; Park Plaza or similar',
+    lodgingSources: [
+      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Pula%2C+Croatia&checkin=2026-07-18&checkout=2026-07-19&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
+      { label: 'Airbnb', url: 'https://www.airbnb.com/s/Pula--Croatia/homes?checkin=2026-07-18&checkout=2026-07-19&adults=2&children=2' },
+    ],
+  },
+  rovinj: {
+    name: 'Rovinj',
+    country: 'Croatia (Istria)',
+    blurb: 'Istria\'s postcard — pastel old town on a hill above the Adriatic.',
+    bestFor: 'Foodies and anyone who wants the "hidden Italian village" feel without leaving Croatia. Truffles, olive oil, and sunset drinks.',
+    heroKeyword: 'Rovinj_Croatia.jpg',
+    mustSee: [
+      { title: 'Old Town & St. Euphemia', desc: 'Climb to the bell tower of St. Euphemia for the best view on the Istrian coast. The whole town looks like a pastel painting.', img: 'Cathedral_of_St._Euphemia_in_Rovinj.jpg' },
+      { title: 'Truffle hunting in Motovun', desc: 'Hour\'s drive inland — hunt white truffles with trained dogs, then eat pasta covered in what you found. €80–120/person.', img: 'Motovun_panorama.jpg' },
+      { title: 'Sunset drinks on the rocks', desc: 'Seafront bars with cushions on the rocks at sea level. Time it 30 min before sunset, order something sparkling.', img: 'View_of_Rovinj-4.jpg' },
+    ],
+    lodgingPerNight: 320,
+    lodgingNote: 'Maistra properties; Hotel Monte Mulini or Adriatic',
+    lodgingSources: [
+      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Rovinj%2C+Croatia&checkin=2026-07-19&checkout=2026-07-20&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
+      { label: 'Maistra', url: 'https://www.maistra.com/' },
+    ],
+  },
+  zadar: {
+    name: 'Zadar',
+    country: 'Croatia (Dalmatia)',
+    blurb: 'Roman ruins, Sea Organ, and Hitchcock\'s "most beautiful sunset."',
+    bestFor: 'The stopover en route to Plitvice — a Roman-walled town with two installations that make the waterfront sing and glow at sunset.',
+    heroKeyword: 'View_over_Zadar.jpg',
+    mustSee: [
+      { title: 'Sea Organ', desc: 'Marble steps at the harbor edge — waves push air through underwater pipes, making the shore literally sing. Free, magical, weird.', img: 'Sea_organ_Zadar_3.JPG' },
+      { title: 'Greeting to the Sun', desc: 'A 22-meter solar-powered light disc that comes alive at sunset with synchronized LEDs. Right next to the Sea Organ.', img: 'The_Greeting_to_the_Sun_solar_panel_installation_in_Zadar,_Croatia_(48607775792).jpg' },
+      { title: 'Roman Forum & St. Donatus', desc: 'Stand inside a 1st-century Roman forum with a 9th-century Byzantine church built on top. Layered history at its purest.', img: 'Church_of_St._Donatus_in_Zadar_(by_Pudelek).JPG' },
+    ],
+    lodgingPerNight: 230,
+    lodgingNote: 'Old town apartment or Art Hotel Kalelarga',
+    lodgingSources: [
+      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Zadar%2C+Croatia&checkin=2026-07-19&checkout=2026-07-20&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
+      { label: 'Airbnb', url: 'https://www.airbnb.com/s/Zadar--Croatia/homes?checkin=2026-07-19&checkout=2026-07-20&adults=2&children=2' },
+    ],
+  },
+  plitvice: {
+    name: 'Plitvice Lakes',
+    country: 'Croatia (inland)',
+    blurb: 'Cascading turquoise lakes and waterfalls — UNESCO, busy, stunning.',
+    bestFor: 'The one inland detour that every traveler to Croatia should make — 16 terraced lakes cascading through a forest canyon.',
+    heroKeyword: 'Plitvice_Lakes,_Galovac_Waterfall.JPG',
+    mustSee: [
+      { title: 'Lower Lakes & Veliki Slap', desc: 'The most dramatic section — boardwalks thread between roaring falls. Veliki Slap is the tallest waterfall in Croatia at 78m.', img: 'Aerial_view_of_the_Big_Waterfall_at_Plitvica_stream_in_Croatia_(48607659011).jpg' },
+      { title: 'Upper Lakes boardwalk loop', desc: 'Quieter, more serene — 16 lakes in a staircase of turquoise. Electric boat across Kozjak connects the two sections.', img: '1.Plitvice_Lakes.jpg' },
+      { title: 'Panoramic viewpoint', desc: 'The classic postcard view looking down over the lower lakes. Arrive at 7am opening to photograph it without crowds.', img: 'Plitvice_Lakes,_Proscansko_jezero.JPG' },
+    ],
+    note: 'Best as 1-night stop or day trip — nothing else nearby.',
+    lodgingPerNight: 280,
+    lodgingNote: 'Hotel Jezero inside park OR Plitvice Ethno Houses nearby',
+    lodgingSources: [
+      { label: 'Hotel Jezero', url: 'https://np-plitvicka-jezera.hr/en/accommodation/hotel-jezero/' },
+      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Plitvice+Lakes%2C+Croatia&checkin=2026-07-20&checkout=2026-07-21&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
+    ],
+  },
+  split: {
+    name: 'Split',
+    country: 'Croatia (Dalmatia)',
+    blurb: 'Living inside Diocletian\'s 1,700-year-old palace walls.',
+    bestFor: 'The Adriatic\'s most improbable city — a living, working town built inside an ancient Roman palace, with ferries to every island you want to visit.',
+    heroKeyword: "Diocletian's_Palace_in_Split,_Croatia_-_panoramio_(2).jpg",
+    mustSee: [
+      { title: 'Diocletian\'s Palace', desc: 'Not a ruin — a palace that became a city. Apartments, bars, and shops fill its 1,700-year-old walls. Walk the Peristyle at night.', img: "Diocletian's_Palace_-_Peristyle.jpg" },
+      { title: 'Riva waterfront promenade', desc: 'Palm-lined seafront that\'s peak people-watching. Ice cream in hand, sunset, the evening passeggiata.', img: 'Croatia_-_Split_-_Riva_under_night.JPG' },
+      { title: 'Krka National Park day trip', desc: 'Less crowded than Plitvice, and you can swim under certain falls (Skradinski Buk). 1h drive from Split.', img: 'Skradinski_Buk.jpg' },
+    ],
+    lodgingPerNight: 280,
+    lodgingNote: 'Old Town apartment/villa; Airbnb for a family of 4',
+    lodgingSources: [
+      { label: 'Airbnb', url: 'https://www.airbnb.com/s/Split--Croatia/homes?checkin=2026-07-20&checkout=2026-07-22&adults=2&children=2' },
+      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Split%2C+Croatia&checkin=2026-07-20&checkout=2026-07-22&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
+    ],
+    fixed: true,
+    position: 'middle',
+  },
+  hvar: {
+    name: 'Hvar',
+    country: 'Croatia (island)',
+    blurb: 'Lavender island — fortress above town, boat days to Pakleni isles.',
+    bestFor: 'The full island life — lavender fields, hidden beaches by boat, a fortress sunset, and one of the prettiest harbors in the Mediterranean.',
+    heroKeyword: 'Aerial_image_of_Hvar_(view_from_the_south).jpg',
+    mustSee: [
+      { title: 'Fortica (Spanish Fortress) at sunset', desc: 'Hike or cab up for the postcard view — harbor below, Pakleni islands offshore, Adriatic gold at dusk.', img: 'Hvar_from_Fortica.JPG' },
+      { title: 'Pakleni Islands boat day', desc: 'Rent a small boat (or hire captain) and island-hop the Pakleni archipelago — swimming, lunch at Palmižana, secret coves.', img: 'Paklinski_otoci.jpg' },
+      { title: 'Lavender fields of Velo Grablje', desc: 'Inland villages where Hvar\'s lavender fame was born. Best in late June/early July when fields are purple.', img: 'Lavender_Hvar.jpg' },
+    ],
+    lodgingPerNight: 420,
+    lodgingNote: 'Maslina Resort (Luxury Collection) or villa in Hvar town',
+    lodgingSources: [
+      { label: 'Maslina Resort', url: 'https://maslinaresort.com/' },
+      { label: 'Amex FHR', url: 'https://www.amextravel.com/hotel-search-results?location=Hvar%2C%20Croatia&programs=FHR' },
+      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Hvar%2C+Croatia&checkin=2026-07-22&checkout=2026-07-25&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
+    ],
+  },
+  brac: {
+    name: 'Brač',
+    country: 'Croatia (island)',
+    blurb: 'Golden Cape beach, stone quarries, quieter than Hvar.',
+    bestFor: 'A quieter, more local island alternative to Hvar — famous beach, white stone traditions, hikeable peaks, fewer party crowds.',
+    heroKeyword: 'Aerial_view_of_Zlatni_rat_(Golden_Horn)_Beach_in_Bol,_Croatia_(48608813081).jpg',
+    mustSee: [
+      { title: 'Zlatni Rat (Golden Horn)', desc: 'Croatia\'s most famous beach — a shape-shifting shingle horn that changes with the wind. Bol, south side of the island.', img: 'Zlatni_rat_Beach_with_a_view_to_the_peak_Vidova_gora_in_Bol,_Croatia_(48608806901).jpg' },
+      { title: 'Vidova Gora summit', desc: 'Highest peak on any Adriatic island — 778m, 2.5-hour hike up, views to Hvar, Vis, and the mainland. Wear real shoes.', img: 'Vidova_gora_Brac.jpg' },
+      { title: 'Pučišća stone carving school', desc: 'Watch apprentices hand-carve the same white stone that built Diocletian\'s Palace and (rumor has it) parts of the White House.', img: 'Pucisca.jpg' },
+    ],
+    lodgingPerNight: 280,
+    lodgingNote: 'Villa in Bol or Supetar; boutique hotel options',
+    lodgingSources: [
+      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Bol%2C+Brac%2C+Croatia&checkin=2026-07-22&checkout=2026-07-24&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
+      { label: 'Airbnb', url: 'https://www.airbnb.com/s/Brac-Island--Croatia/homes?checkin=2026-07-22&checkout=2026-07-24&adults=2&children=2' },
+    ],
+  },
+  korcula: {
+    name: 'Korčula',
+    country: 'Croatia (island)',
+    blurb: 'Marco Polo\'s alleged birthplace — walled old town on a thumb of land.',
+    bestFor: 'A pocket-sized Dubrovnik with none of the crowds — walled medieval town, Marco Polo lore, and Pelješac Peninsula wine country a short hop away.',
+    heroKeyword: 'Birthplace_of_Marco_Polo,_Korcula,_Croatia.JPG',
+    mustSee: [
+      { title: 'Old Town fishbone streets', desc: 'Medieval grid designed to break the winds — walk the walls at sunset, climb St. Mark\'s tower, wander the tight stone lanes.', img: 'Korcula_Old_Town.jpg' },
+      { title: 'Moreška sword dance', desc: 'A traditional sword dance performed Mondays & Thursdays in summer. Costumes, choreography, and it\'s genuinely exciting.', img: 'Moreska_sword_dance.jpg' },
+      { title: 'Pelješac Peninsula wine tasting', desc: 'Short ferry to the mainland, then taste Plavac Mali (the parent grape of Zinfandel) at small family wineries.', img: 'Peljesac_wine.jpg' },
+    ],
+    lodgingPerNight: 240,
+    lodgingNote: 'Old town apartment or Lesic Dimitri Palace',
+    lodgingSources: [
+      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Korcula%2C+Croatia&checkin=2026-07-23&checkout=2026-07-25&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
+      { label: 'Lesic Dimitri', url: 'https://www.lesic-dimitri.com/' },
+    ],
+  },
+  mljet: {
+    name: 'Mljet',
+    country: 'Croatia (island)',
+    blurb: 'Half the island is national park — salt lakes, forest, Odysseus cave.',
+    bestFor: 'Quiet, forested island escape — cycling around salt lakes, kayaking, and almost no nightlife. Pure decompression before Dubrovnik.',
+    heroKeyword: 'Great_Lake,_Island_of_Mljet,_Croatia.JPG',
+    mustSee: [
+      { title: 'Great & Small Salt Lakes', desc: 'Two interconnected saltwater lakes in the national park. Rent bikes and circle them (9km), swim anywhere you like.', img: 'Malo_jezero_(Mljet).JPG' },
+      { title: 'St. Mary\'s Island monastery', desc: 'Tiny island in the middle of Great Lake with a 12th-century Benedictine monastery. Boat ride included with park ticket.', img: 'Blick_auf_die_Insel_Sankt_Maria_im_Nationalpark_Mljet,_Kroatien_(48739062737).jpg' },
+      { title: 'Odysseus Cave kayak', desc: 'Sea cave where Odysseus was supposedly held by Calypso. Swim inside at midday when light shafts illuminate it blue.', img: 'Mljet_pomena.JPG' },
+    ],
+    lodgingPerNight: 200,
+    lodgingNote: 'Pomena or Polace village guesthouses',
+    lodgingSources: [
+      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Mljet%2C+Croatia&checkin=2026-07-24&checkout=2026-07-25&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
+    ],
+  },
+  dubrovnik: {
+    name: 'Dubrovnik',
+    country: 'Croatia (Dalmatia)',
+    blurb: 'Walled pearl of the Adriatic — where the trip ends at the Pile Gate.',
+    bestFor: 'The grand finale — walking marble streets polished by centuries, circling the entire walled city from above, Game of Thrones moments everywhere.',
+    heroKeyword: 'Old_City_of_Dubrovnik-108775.jpg',
+    mustSee: [
+      { title: 'City Walls walk (complete circuit)', desc: 'The 2km walk around Dubrovnik\'s entire 13th-century fortification — the single most iconic activity in Croatia. Go at 8am opening.', img: 'Mediterranes_Panorama_Altstadt_von_Dubrovnik_Ansicht_von_Osten_Hrvatska_Kroatien_-_Foto_Wolfgang_Pehlemann_DSC05194.jpg' },
+      { title: 'Mount Srđ cable car', desc: 'Up 405m in 4 minutes. Sunset from the top, with the walled city below and islands floating in the Adriatic.', img: 'Dubrovnik_view_from_Srd.jpg' },
+      { title: 'Lokrum or Elafiti Islands', desc: 'Quick ferry to Lokrum (swim, peacocks, Game of Thrones throne), or day trip to the three Elafiti islands for beaches.', img: 'Lokrum.jpg' },
+    ],
+    lodgingPerNight: 550,
+    lodgingNote: 'Amex FHR — Villa Dubrovnik or Excelsior with $100 credit',
+    lodgingSources: [
+      { label: 'Amex FHR', url: 'https://www.amextravel.com/hotel-search-results?location=Dubrovnik%2C%20Croatia&programs=FHR' },
+      { label: 'Villa Dubrovnik', url: 'https://www.villa-dubrovnik.hr/' },
+      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Dubrovnik%2C+Croatia&checkin=2026-07-25&checkout=2026-07-28&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
+    ],
+    fixed: true,
+    position: 'end',
+  },
+};
+
+/* Image helper — uses Wikimedia Commons Special:FilePath redirect.
+   This is a simple HTTP redirect URL that browsers follow when loading
+   an <img> tag. No JS fetch, no CORS, no API — just works. */
+
+function wikiImg(filename, width = 800) {
+  if (!filename) return '';
+  const f = encodeURIComponent(filename.replace(/ /g, '_'));
+  return `https://commons.wikimedia.org/w/index.php?title=Special:Redirect/file/${f}&width=${width}`;
+}
+
+/* No-op stubs for backwards compat (old hydrate calls become harmless) */
+async function hydrateWikiImages() {}
+
+/* =========================================================
+   TRANSPORT: possible legs between stops
+   Costs = per-person unless 'shared' true (whole-group)
+   time: hours (transit time)
+   ========================================================= */
+
+const LEGS = {
+  // From Venice
+  'venice->trieste': [
+    { mode: 'Train', desc: 'Frecciarossa or regional train', time: 2.0, cost: 40, shared: false, pros: ['Fast, frequent, no transfers','Scenic Adriatic coastline views'], cons: ['Not as memorable as a boat'] },
+    { mode: 'Drive', desc: 'Rental car, ~160km', time: 2.5, cost: 120, shared: true, pros: ['Flexibility to stop in Aquileia (Roman ruins)'], cons: ['Parking hassles in both cities'] },
+  ],
+  'venice->pula': [
+    { mode: 'Ferry', desc: 'Kompas catamaran, high-speed', time: 3.5, cost: 130, shared: false, pros: ['Iconic Adriatic crossing','No airport hassle','Foot-passenger only (easy boarding)'], cons: ['€500+ for 4 people','Once daily, afternoons only','Seasonal only'] },
+    { mode: 'Drive', desc: 'Via Trieste, 260km', time: 4.0, cost: 200, shared: true, pros: ['Stop in Trieste or Piran (Slovenia) en route','Flexibility'], cons: ['Long day behind the wheel','Border crossing'] },
+    { mode: 'Fly', desc: 'Via VIE or ZAG (1 stop)', time: 5.0, cost: 220, shared: false, pros: ['Covered by points possibly'], cons: ['No direct; connection required','Airport transfers eat the time savings'] },
+  ],
+  'venice->rovinj': [
+    { mode: 'Ferry', desc: 'Venezia Lines catamaran', time: 3.75, cost: 110, shared: false, pros: ['Direct seasonal crossing','Deposits you in the prettiest Istrian town'], cons: ['Summer only, limited schedule','€440 for 4'] },
+    { mode: 'Drive', desc: 'Via Trieste + Pula, 280km', time: 4.5, cost: 220, shared: true, pros: ['Stop anywhere along Istria'], cons: ['Long drive, border crossing'] },
+  ],
+  'venice->split': [
+    { mode: 'Fly', desc: 'Croatia Airlines / ITA direct', time: 1.25, cost: 180, shared: false, pros: ['Fastest option — only 1h10m airborne','Saves 1-2 days vs any alternative','Frequent summer flights'], cons: ['Skips Istria and coastal scenery entirely','No memorable transit moment'] },
+    { mode: 'Drive', desc: '800km via coast, 2 days', time: 10.0, cost: 400, shared: true, pros: ['See everything along the way'], cons: ['Eats 2 full days of your trip','Exhausting with teens'] },
+  ],
+  'venice->zadar': [
+    { mode: 'Fly', desc: 'Via VIE, FRA or MUC (1 stop)', time: 5.0, cost: 250, shared: false, pros: ['Puts you close to Plitvice'], cons: ['Always requires a connection','Can take most of a day'] },
+    { mode: 'Drive', desc: 'Via Trieste, 550km', time: 7.5, cost: 350, shared: true, pros: ['See Istria en route'], cons: ['Very long driving day','Border crossing'] },
+  ],
+
+  // From Trieste
+  'trieste->pula': [
+    { mode: 'Drive', desc: 'Via Koper, 110km', time: 2.0, cost: 100, shared: true, pros: ['Short, scenic drive through Slovenia','Stop in Piran — a hidden gem'], cons: ['Border crossings (2x)'] },
+    { mode: 'Bus', desc: 'FlixBus direct', time: 2.5, cost: 25, shared: false, pros: ['Cheap, simple'], cons: ['Less comfort; border waits'] },
+  ],
+  'trieste->rovinj': [
+    { mode: 'Drive', desc: '145km via Koper', time: 2.5, cost: 130, shared: true, pros: ['Stop in Piran or Portorož'], cons: ['Border crossings'] },
+  ],
+  'trieste->zadar': [
+    { mode: 'Drive', desc: '450km coastal highway', time: 5.5, cost: 280, shared: true, pros: ['Can split over 2 days with Pula stop'], cons: ['Long drive'] },
+  ],
+
+  // From Pula
+  'pula->rovinj': [
+    { mode: 'Drive', desc: '45km up the coast', time: 0.75, cost: 40, shared: true, pros: ['Short hop, scenic','Rental car + drive flexibility'], cons: [] },
+    { mode: 'Bus', desc: 'Regional bus, frequent', time: 1.0, cost: 10, shared: false, pros: ['Cheap'], cons: ['Less flexible'] },
+  ],
+  'pula->zadar': [
+    { mode: 'Catamaran', desc: 'Krilo fast ferry (Fri/Sun only)', time: 5.0, cost: 27, shared: false, pros: ['Very cheap','Multiple island stops en route (Lošinj, Silba)'], cons: ['Only 2 days/week in summer','Long at 5 hours'] },
+    { mode: 'Drive', desc: '300km, inland highway', time: 3.5, cost: 220, shared: true, pros: ['Can detour to Plitvice or Krka'], cons: ['Highway driving, not scenic'] },
+    { mode: 'Fly', desc: 'Via ZAG usually', time: 4.0, cost: 180, shared: false, pros: [], cons: ['Almost always connects','Not worth it for this distance'] },
+  ],
+  'pula->split': [
+    { mode: 'Fly', desc: 'Direct Croatia Airlines (summer)', time: 1.0, cost: 150, shared: false, pros: ['Fast, easy'], cons: ['Limited frequency','Seasonal route'] },
+    { mode: 'Drive', desc: '530km coastal route', time: 6.5, cost: 380, shared: true, pros: ['Stop at Plitvice or Zadar','Full flexibility'], cons: ['Long day'] },
+  ],
+
+  // From Rovinj
+  'rovinj->zadar': [
+    { mode: 'Drive', desc: '340km via Pula and highway', time: 4.0, cost: 250, shared: true, pros: ['Can stop at Plitvice en route'], cons: ['Long drive'] },
+  ],
+  'rovinj->split': [
+    { mode: 'Drive', desc: '540km, plan overnight stop', time: 6.5, cost: 400, shared: true, pros: ['Can split with Plitvice or Zadar stop'], cons: ['Very long day'] },
+    { mode: 'Fly', desc: 'From Pula airport', time: 2.5, cost: 180, shared: false, pros: ['Faster'], cons: ['30-min drive to Pula airport first'] },
+  ],
+
+  // From Zadar
+  'zadar->plitvice': [
+    { mode: 'Drive', desc: '140km, 2 hours', time: 2.0, cost: 90, shared: true, pros: ['Only reasonable way','Can do as day trip and return'], cons: ['Need rental car'] },
+    { mode: 'Bus', desc: 'FlixBus or local', time: 3.0, cost: 20, shared: false, pros: ['No driving'], cons: ['Infrequent schedule','Less flexible once there'] },
+  ],
+  'zadar->split': [
+    { mode: 'Drive', desc: '160km, coastal highway', time: 2.0, cost: 120, shared: true, pros: ['Quick','Can detour to Krka falls or Šibenik'], cons: [] },
+    { mode: 'Bus', desc: 'FlixBus, frequent', time: 2.5, cost: 18, shared: false, pros: ['Dirt cheap','Comfortable'], cons: [] },
+    { mode: 'Catamaran', desc: 'Krilo seasonal', time: 3.5, cost: 30, shared: false, pros: ['Sea views'], cons: ['Limited schedule'] },
+  ],
+
+  // From Plitvice
+  'plitvice->split': [
+    { mode: 'Drive', desc: '250km, 3 hours', time: 3.0, cost: 150, shared: true, pros: ['Direct route'], cons: ['Half-day in car'] },
+    { mode: 'Bus', desc: 'FlixBus, few daily', time: 4.5, cost: 25, shared: false, pros: ['No driving'], cons: ['Long','Less flexible'] },
+  ],
+  'plitvice->zadar': [
+    { mode: 'Drive', desc: '140km back down', time: 2.0, cost: 90, shared: true, pros: ['Easy'], cons: [] },
+  ],
+
+  // From Split
+  'split->hvar': [
+    { mode: 'Catamaran', desc: 'Krilo fast ferry, ~1hr', time: 1.0, cost: 15, shared: false, pros: ['Fast, cheap, frequent','Foot passenger — easy'], cons: ['Cars not allowed on fast ferries'] },
+    { mode: 'Car ferry', desc: 'Jadrolinija to Stari Grad', time: 2.0, cost: 20, shared: false, pros: ['Can bring car','Cheap'], cons: ['Stari Grad is 20min from Hvar town'] },
+  ],
+  'split->brac': [
+    { mode: 'Ferry', desc: 'Jadrolinija to Supetar', time: 1.0, cost: 12, shared: false, pros: ['Very frequent','Cheapest island hop'], cons: [] },
+  ],
+  'split->korcula': [
+    { mode: 'Catamaran', desc: 'Krilo or TP Line direct', time: 2.75, cost: 35, shared: false, pros: ['Direct, scenic route'], cons: [] },
+  ],
+  'split->dubrovnik': [
+    { mode: 'Catamaran', desc: 'Krilo direct (seasonal)', time: 4.5, cost: 55, shared: false, pros: ['Scenic coast ride'], cons: ['Long, can be rough'] },
+    { mode: 'Drive', desc: '230km coastal road', time: 3.5, cost: 280, shared: true, pros: ['Famously scenic','Stop at Ston or Mali Ston for oysters'], cons: ['Brief Bosnia crossing (passports)'] },
+    { mode: 'Bus', desc: 'FlixBus, frequent', time: 4.5, cost: 25, shared: false, pros: ['Cheap'], cons: ['Long'] },
+    { mode: 'Fly', desc: 'Croatia Airlines direct', time: 0.75, cost: 130, shared: false, pros: ['Fastest'], cons: ['Airport transfer time erases savings'] },
+  ],
+
+  // From Hvar
+  'hvar->korcula': [
+    { mode: 'Catamaran', desc: 'Krilo or Jadrolinija', time: 1.5, cost: 18, shared: false, pros: ['Perfect island-hop'], cons: [] },
+  ],
+  'hvar->mljet': [
+    { mode: 'Catamaran', desc: 'Krilo via Korčula', time: 2.75, cost: 30, shared: false, pros: ['Straight to national park'], cons: ['Limited daily departures'] },
+  ],
+  'hvar->dubrovnik': [
+    { mode: 'Catamaran', desc: 'Krilo direct, ~3.5hrs', time: 3.5, cost: 45, shared: false, pros: ['Direct, scenic'], cons: ['Long but manageable'] },
+  ],
+
+  // From Brač
+  'brac->hvar': [
+    { mode: 'Catamaran', desc: 'Krilo via Bol', time: 1.0, cost: 15, shared: false, pros: ['Easy island hop'], cons: [] },
+  ],
+  'brac->split': [
+    { mode: 'Ferry', desc: 'Jadrolinija Supetar-Split', time: 1.0, cost: 12, shared: false, pros: [], cons: [] },
+  ],
+  'brac->dubrovnik': [
+    { mode: 'Catamaran', desc: 'Via Hvar & Korčula', time: 5.5, cost: 55, shared: false, pros: [], cons: ['Multi-stop, long day'] },
+  ],
+
+  // From Korčula
+  'korcula->mljet': [
+    { mode: 'Catamaran', desc: 'Krilo short hop', time: 0.75, cost: 15, shared: false, pros: ['Quick'], cons: [] },
+  ],
+  'korcula->dubrovnik': [
+    { mode: 'Catamaran', desc: 'Krilo or TP Line', time: 2.0, cost: 30, shared: false, pros: ['Scenic final approach'], cons: [] },
+  ],
+
+  // From Mljet
+  'mljet->dubrovnik': [
+    { mode: 'Catamaran', desc: 'Krilo or G&V direct', time: 1.25, cost: 20, shared: false, pros: ['Short, cheap'], cons: [] },
+  ],
+};
+
+/* Which stops can follow a given stop, in logical geographic order */
+const ADJACENCY = {
+  venice: ['trieste','pula','rovinj','zadar','split'],
+  trieste: ['pula','rovinj','zadar'],
+  pula: ['rovinj','zadar','split'],
+  rovinj: ['zadar','split'],  // skip pula if already went direct
+  zadar: ['plitvice','split'],
+  plitvice: ['split','zadar'],
+  split: ['hvar','brac','korcula','dubrovnik'],
+  hvar: ['korcula','mljet','dubrovnik'],
+  brac: ['hvar','split','dubrovnik'],
+  korcula: ['mljet','dubrovnik'],
+  mljet: ['dubrovnik'],
+  dubrovnik: [],
+};
+
+/* =========================================================
+   SOURCE LINKS: where to verify live prices per leg mode
+   ========================================================= */
+
+const CITY_IATA = {
+  venice: 'VCE', trieste: 'TRS', pula: 'PUY', rovinj: 'PUY',
+  zadar: 'ZAD', plitvice: 'ZAD', split: 'SPU', hvar: 'SPU',
+  brac: 'BWK', korcula: 'DBV', mljet: 'DBV', dubrovnik: 'DBV',
+};
+
+function sourceForLeg(legKey, mode) {
+  const [from, to] = legKey.split('->');
+  const fromCode = CITY_IATA[from];
+  const toCode = CITY_IATA[to];
+  const dateParam = '2026-07-20';  // mid-trip placeholder
+
+  const m = mode.toLowerCase();
+
+  if (m.includes('ferry') || m.includes('catamaran')) {
+    // Krilo for most Croatian catamarans; Kompas/Venezia for Italy→Croatia
+    if (from === 'venice') {
+      return { label: 'Kompas Ferry', url: 'https://www.kompas-online.com/en-us/ferries-italy-croatia' };
+    }
+    return { label: 'Krilo Schedule', url: 'https://www.krilo.hr/en/sailing-schedule/' };
+  }
+  if (m === 'fly') {
+    if (fromCode && toCode && fromCode !== toCode) {
+      return {
+        label: 'Google Flights',
+        url: `https://www.google.com/travel/flights?q=Flights%20to%20${toCode}%20from%20${fromCode}%20on%20${dateParam}`
+      };
+    }
+    return { label: 'Google Flights', url: 'https://www.google.com/travel/flights' };
+  }
+  if (m === 'drive') {
+    return { label: 'Rentalcars', url: `https://www.rentalcars.com/?exsite=51936&adplat=homepage&preflang=en` };
+  }
+  if (m === 'train') {
+    return { label: 'Trenitalia', url: 'https://www.trenitalia.com/en.html' };
+  }
+  if (m === 'bus') {
+    return { label: 'FlixBus', url: 'https://www.flixbus.com/' };
+  }
+  return { label: 'Search', url: `https://www.google.com/search?q=${from}+to+${to}+${mode}` };
+}
+
+/* =========================================================
+   STATE
+   ========================================================= */
+
+let journey = loadJourney();
+let overrides = loadOverrides();  // { 'leg:venice->split:Fly': 220, 'lodge:split': 260, ... }
+
+function saveState() {
+  try {
+    localStorage.setItem('croatia_journey', JSON.stringify(journey));
+    localStorage.setItem('croatia_overrides', JSON.stringify(overrides));
+  } catch(e) {}
+}
+
+function loadJourney() {
+  try {
+    const saved = localStorage.getItem('croatia_journey');
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return [{ stop: 'venice', nights: 1, legIn: null }];
+}
+
+function loadOverrides() {
+  try {
+    const saved = localStorage.getItem('croatia_overrides');
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return {};
+}
+
+function clearAllOverrides() {
+  if (confirm('Clear all price overrides and revert to estimates?')) {
+    overrides = {};
+    saveState();
+    render();
+  }
+}
+
+/* Override key helpers */
+function lodgeKey(stop) { return `lodge:${stop}`; }
+function legKey(fromTo, mode) { return `leg:${fromTo}:${mode}`; }
+
+function getLodgePerNight(stop) {
+  const k = lodgeKey(stop);
+  if (overrides[k] != null && overrides[k] !== '') return Number(overrides[k]);
+  return STOPS[stop].lodgingPerNight;
+}
+
+function getLegCostPerUnit(fromTo, leg) {
+  // Returns the PER-UNIT cost (per-person if !shared, else group total)
+  const k = legKey(fromTo, leg.mode);
+  if (overrides[k] != null && overrides[k] !== '') return Number(overrides[k]);
+  return leg.cost;
+}
+
+function getLegTotalCost(fromTo, leg) {
+  const perUnit = getLegCostPerUnit(fromTo, leg);
+  return leg.shared ? perUnit : perUnit * TRAVELERS;
+}
+
+function setOverride(key, value) {
+  if (value === '' || value == null || isNaN(Number(value))) {
+    delete overrides[key];
+  } else {
+    overrides[key] = Number(value);
+  }
+  saveState();
+  render();
+}
+
+function computeTotals() {
+  let cost = 0;
+  let nights = 0;
+  let hours = 0;
+  journey.forEach(j => {
+    nights += j.nights;
+    cost += (getLodgePerNight(j.stop) * j.nights);
+    if (j.legIn) {
+      hours += j.legIn.time;
+      // legIn.fromTo was stored when chosen; fall back for legacy
+      const fromTo = j.legIn.fromTo || '';
+      cost += getLegTotalCost(fromTo, j.legIn);
+    }
+  });
+  return { cost, nights, hours };
+}
+
+function nightsRemaining() {
+  const used = journey.reduce((a, j) => a + j.nights, 0);
+  return TOTAL_NIGHTS - used;
+}
+
+function currentStop() {
+  return journey[journey.length - 1].stop;
+}
+
+function mustReachDubrovnik() {
+  // Check if current stop has a path to Dubrovnik
+  const adj = ADJACENCY[currentStop()] || [];
+  return adj.includes('dubrovnik') || adj.some(s => ADJACENCY[s]?.includes('dubrovnik'));
+}
+
+/* =========================================================
+   RENDERING
+   ========================================================= */
+
+function render() {
+  const app = document.getElementById('app');
+  const totals = computeTotals();
+  const remaining = nightsRemaining();
+  const cur = currentStop();
+  const atEnd = cur === 'dubrovnik';
+
+  let html = `
+    <header>
+      <div class="eyebrow">July 17 — 28, 2026 · Four travelers</div>
+      <h1>The <em>Adriatic</em> Route</h1>
+      <p class="sub">Build the trip one leg at a time. Every price has a <span style="color:var(--sea);font-style:normal">↗ source link</span> to check live pricing, plus an override field to lock in confirmed quotes.</p>
+    </header>
+
+    <div class="dashboard">
+      <div class="stat">
+        <div class="stat-label">Nights Planned</div>
+        <div class="stat-value ${remaining < 0 ? 'warn' : ''}">${totals.nights} / ${TOTAL_NIGHTS}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Nights Left</div>
+        <div class="stat-value ${remaining < 0 ? 'warn' : (remaining === 0 ? 'ok' : '')}">${remaining}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Running Cost (4 pax)</div>
+        <div class="stat-value">$${totals.cost.toLocaleString()}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Transit Hours</div>
+        <div class="stat-value">${totals.hours.toFixed(1)}h</div>
+      </div>
+    </div>
+
+    ${renderTrail()}
+  `;
+
+  if (atEnd) {
+    html += renderFinal();
+  } else {
+    html += renderCurrentDecision(remaining);
+  }
+
+  const overrideCount = Object.keys(overrides).filter(k => overrides[k] != null && overrides[k] !== '').length;
+
+  html += `
+    <div class="controls">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button class="btn-secondary" onclick="undoLast()" ${journey.length === 1 ? 'disabled style="opacity:.4;cursor:not-allowed"' : ''}>← Undo last</button>
+        <button class="btn-secondary" onclick="restart()">Start over</button>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        ${overrideCount > 0 ? `<span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.15em;color:var(--green);text-transform:uppercase">${overrideCount} price${overrideCount !== 1 ? 's' : ''} confirmed</span>
+        <button class="btn-secondary" onclick="clearAllOverrides()">Clear overrides</button>` : ''}
+      </div>
+    </div>
+  `;
+
+  app.innerHTML = html;
+  hydrateWikiImages();
+}
+
+function renderTrail() {
+  let html = '<div class="trail"><span class="trail-label">Journey</span>';
+  journey.forEach((j, i) => {
+    if (i > 0 && j.legIn) {
+      html += `<span class="trail-arrow">→</span><span class="trail-mode">${j.legIn.mode}</span><span class="trail-arrow">→</span>`;
+    } else if (i > 0) {
+      html += `<span class="trail-arrow">→</span>`;
+    }
+    html += `<span class="trail-stop">${STOPS[j.stop].name}<span class="nights">· ${j.nights}n</span></span>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+function renderCurrentDecision(remaining) {
+  const cur = currentStop();
+  const stopData = STOPS[cur];
+  const last = journey[journey.length - 1];
+
+  let html = `
+    <div class="section-title">
+      <span class="section-number">STOP ${String(journey.length).padStart(2, '0')}</span>
+      <span class="section-rule"></span>
+    </div>
+    <div class="guide-hero">
+      <img src="${wikiImg(stopData.heroKeyword, 1200)}" alt="${stopData.name}" loading="lazy" onerror="this.style.display='none'">
+      <div class="guide-hero-overlay">
+        <div class="guide-hero-country">${stopData.country} · Stop ${journey.length}</div>
+        <div class="guide-hero-name">${stopData.name}</div>
+      </div>
+    </div>
+
+    ${stopData.bestFor ? `
+      <div class="best-for">
+        <div class="best-for-label">Best for</div>
+        <div class="best-for-text">${stopData.bestFor}</div>
+      </div>
+    ` : ''}
+
+    ${stopData.mustSee && stopData.mustSee.length ? `
+      <div class="mustsee-section">
+        <div class="mustsee-label">Must see &amp; do</div>
+        <div class="mustsee-grid">
+          ${stopData.mustSee.map(item => `
+            <div class="mustsee-card">
+              <img class="mustsee-img" src="${wikiImg(item.img, 500)}" alt="${item.title}" loading="lazy" onerror="this.style.display='none'">
+              <div class="mustsee-body">
+                <div class="mustsee-title">${item.title}</div>
+                <div class="mustsee-desc">${item.desc}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    ` : ''}
+  `;
+
+  // Nights picker for current stop (except if we just arrived with 0 nights placeholder)
+  html += `
+    <div class="nights-picker" style="margin-top:28px">
+      <label>How many nights in ${stopData.name}?</label>
+      <div class="nights-buttons">
+        ${[1,2,3,4].map(n => `
+          <button class="nights-btn ${last.nights === n ? 'active' : ''}" onclick="setNights(${n})" ${n > remaining + last.nights ? 'disabled style="opacity:.3;cursor:not-allowed"' : ''}>${n} night${n > 1 ? 's' : ''}</button>
+        `).join('')}
+      </div>
+      ${renderLodgingControls(cur)}
+    </div>
+  `;
+
+  if (remaining <= 0 && cur !== 'dubrovnik') {
+    html += `<div class="warning">⚠ You\'re out of nights but haven\'t reached Dubrovnik (your departure city). Reduce a stop\'s nights or click "Jump to Dubrovnik" below.</div>`;
+  }
+
+  // Next options
+  const nextStops = ADJACENCY[cur] || [];
+  if (nextStops.length === 0) {
+    html += `<div class="warning">No onward options from ${stopData.name}.</div>`;
+    return html;
+  }
+
+  html += `
+    <div class="section-title" style="margin-top:32px">
+      <span class="section-number">CHOOSE NEXT</span>
+      <span class="section-name">Where to, from ${stopData.name}?</span>
+      <span class="section-rule"></span>
+    </div>
+    <div class="options">
+  `;
+
+  nextStops.forEach(nextStop => {
+    const key = `${cur}->${nextStop}`;
+    const legs = LEGS[key] || [];
+    const nsData = STOPS[nextStop];
+    const recommended = isRecommended(cur, nextStop);
+
+    legs.forEach(leg => {
+      const oKey = legKey(key, leg.mode);
+      const hasOverride = overrides[oKey] != null && overrides[oKey] !== '';
+      const perUnit = getLegCostPerUnit(key, leg);
+      const legCost = leg.shared ? perUnit : perUnit * TRAVELERS;
+      const source = sourceForLeg(key, leg.mode);
+      const unitLabel = leg.shared ? 'group' : 'per person';
+
+      html += `
+        <div class="option ${recommended && leg === legs[0] ? 'recommended' : ''}">
+          ${recommended && leg === legs[0] ? '<span class="rec-badge">Suggested</span>' : ''}
+          <div class="opt-hero">
+            <img src="${wikiImg(nsData.heroKeyword, 900)}" alt="${nsData.name}" loading="lazy" onerror="this.style.display='none'">
+            <div class="opt-hero-caption">Next: ${nsData.name}, ${nsData.country}</div>
+          </div>
+          <div class="opt-header">
+            <div>
+              <div class="opt-title">→ ${nsData.name}</div>
+              <div class="opt-mode">${leg.mode} · ${leg.desc}</div>
+            </div>
+            <div class="opt-meta">
+              <div class="meta-item">
+                <div class="val">${leg.time}h</div>
+                <div class="lbl">Transit</div>
+              </div>
+              <div class="price-block">
+                <div class="price-primary">
+                  <div class="val ${hasOverride ? 'overridden' : ''}">$${legCost.toLocaleString()}</div>
+                  <div class="est-tag ${hasOverride ? 'confirmed' : ''}">${hasOverride ? '✓ confirmed' : 'est.'}</div>
+                </div>
+                <div class="lbl" style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink-muted)">For 4 pax</div>
+                <div class="price-tools">
+                  <a class="source-link" href="${source.url}" target="_blank" rel="noopener">↗ ${source.label}</a>
+                  <span class="override-label">$/${unitLabel === 'group' ? 'trip' : 'pp'}</span>
+                  <input type="number" class="override-input ${hasOverride ? 'has-value' : ''}"
+                    placeholder="${leg.cost}"
+                    value="${hasOverride ? overrides[oKey] : ''}"
+                    onchange="setOverride('${oKey}', this.value)"
+                    title="Enter actual price per ${unitLabel} to override the estimate"
+                  />
+                  ${hasOverride ? `<button class="override-clear" onclick="setOverride('${oKey}', '')" title="Clear override">×</button>` : ''}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="opt-desc">${nsData.blurb}</div>
+          ${nsData.bestFor ? `
+            <div class="opt-bestfor">
+              <strong>Best for</strong>
+              ${nsData.bestFor}
+            </div>
+          ` : ''}
+          ${nsData.mustSee && nsData.mustSee.length ? `
+            <div class="opt-mustsee">
+              ${nsData.mustSee.slice(0, 3).map(item => `
+                <div class="opt-mustsee-item">
+                  <img src="${wikiImg(item.img, 400)}" alt="${item.title}" loading="lazy" onerror="this.style.display='none'">
+                  <div class="caption">${item.title}</div>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+          <div class="pros-cons">
+            <ul class="pc-list pros">
+              <li class="pc-label">Pros of this route</li>
+              ${leg.pros.length ? leg.pros.map(p => `<li>${p}</li>`).join('') : '<li style="padding:0;color:var(--ink-muted)">—</li>'}
+            </ul>
+            <ul class="pc-list cons">
+              <li class="pc-label">Cons of this route</li>
+              ${leg.cons.length ? leg.cons.map(c => `<li>${c}</li>`).join('') : '<li style="padding:0;color:var(--ink-muted)">—</li>'}
+            </ul>
+          </div>
+          <div class="opt-actions">
+            <div class="opt-lodging"><strong>Lodging there:</strong> $${getLodgePerNight(nextStop)}/night · ${nsData.lodgingNote}</div>
+            <button class="choose-btn" onclick="chooseLeg('${nextStop}', ${legs.indexOf(leg)}, '${key}')">Go here</button>
+          </div>
+        </div>
+      `;
+    });
+  });
+
+  html += '</div>';
+  return html;
+}
+
+function renderLodgingControls(stop) {
+  const s = STOPS[stop];
+  const k = lodgeKey(stop);
+  const hasOverride = overrides[k] != null && overrides[k] !== '';
+  const perNight = getLodgePerNight(stop);
+  const sources = s.lodgingSources || [];
+
+  return `
+    <div class="lodging-controls">
+      <div class="label-text">
+        <strong>Lodging:</strong> ${s.lodgingNote} ·
+        <span style="color:${hasOverride ? 'var(--green)' : 'var(--ink-soft)'}">$${perNight}/night ${hasOverride ? '✓' : '(est.)'}</span>
+      </div>
+      <div class="lodging-tools">
+        ${sources.map(src => `<a class="source-link" href="${src.url}" target="_blank" rel="noopener">↗ ${src.label}</a>`).join('')}
+        <span class="override-label">$/night</span>
+        <input type="number" class="override-input ${hasOverride ? 'has-value' : ''}"
+          placeholder="${s.lodgingPerNight}"
+          value="${hasOverride ? overrides[k] : ''}"
+          onchange="setOverride('${k}', this.value)"
+          title="Enter actual per-night price to override the estimate"
+        />
+        ${hasOverride ? `<button class="override-clear" onclick="setOverride('${k}', '')" title="Clear override">×</button>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function isRecommended(from, to) {
+  // Simple heuristic: recommended next stops along the canonical path
+  const path = {
+    venice: 'split',  // direct fly is fastest
+    split: 'hvar',
+    hvar: 'dubrovnik',
+    zadar: 'split',
+    plitvice: 'split',
+    pula: 'split',
+    rovinj: 'zadar',
+    trieste: 'pula',
+    brac: 'hvar',
+    korcula: 'dubrovnik',
+    mljet: 'dubrovnik',
+  };
+  return path[from] === to;
+}
+
+function renderFinal() {
+  const totals = computeTotals();
+  let html = `
+    <div class="final" id="finalPlan">
+      <div class="final-title">Your <em>Itinerary</em></div>
+      <div class="final-sub">Croatia · July 17–28, 2026 · Four travelers · Building on Amex + Chase points</div>
+  `;
+
+  journey.forEach((j, i) => {
+    const s = STOPS[j.stop];
+    const lodgeOverride = overrides[lodgeKey(j.stop)] != null && overrides[lodgeKey(j.stop)] !== '';
+    const perNight = getLodgePerNight(j.stop);
+    let detail = `${j.nights} night${j.nights !== 1 ? 's' : ''} · ${s.lodgingNote}`;
+    let transitDetail = '';
+    let legOverride = false;
+    if (j.legIn) {
+      legOverride = overrides[legKey(j.legIn.fromTo || '', j.legIn.mode)] != null &&
+                    overrides[legKey(j.legIn.fromTo || '', j.legIn.mode)] !== '';
+      transitDetail = `<div class="leg-detail" style="margin-bottom:6px"><em>Arriving by ${j.legIn.mode.toLowerCase()}:</em> ${j.legIn.desc} · ${j.legIn.time}h</div>`;
+    }
+    const lodgingCost = perNight * j.nights;
+    const transitCost = j.legIn ? getLegTotalCost(j.legIn.fromTo || '', j.legIn) : 0;
+
+    const lodgeTag = lodgeOverride ? '<span style="color:var(--green);font-size:10px">✓</span>' : '<span style="color:var(--ink-muted);font-size:10px">est.</span>';
+    const transitTag = legOverride ? '<span style="color:var(--green);font-size:10px">✓</span>' : (j.legIn ? '<span style="color:var(--ink-muted);font-size:10px">est.</span>' : '');
+
+    html += `
+      <div class="leg-row">
+        <div class="leg-num">${String(i + 1).padStart(2, '0')}</div>
+        <div>
+          <div class="leg-loc">${s.name}</div>
+          ${transitDetail}
+          <div class="leg-detail">${detail}</div>
+        </div>
+        <div class="leg-cost">
+          $${(lodgingCost + transitCost).toLocaleString()}
+          <span class="sub">lodge $${lodgingCost.toLocaleString()} ${lodgeTag}${transitCost ? ` · transit $${transitCost.toLocaleString()} ${transitTag}` : ''}</span>
+        </div>
+      </div>
+    `;
+  });
+
+  html += `
+      <div class="final-summary">
+        <div class="sum-item">
+          <div class="lbl">Total Nights</div>
+          <div class="val">${totals.nights}</div>
+        </div>
+        <div class="sum-item">
+          <div class="lbl">Ground Cost (4 pax)</div>
+          <div class="val">$${totals.cost.toLocaleString()}</div>
+        </div>
+        <div class="sum-item">
+          <div class="lbl">Transit Hours</div>
+          <div class="val">${totals.hours.toFixed(1)}h</div>
+        </div>
+      </div>
+      <div class="final-actions">
+        <button class="btn-primary" onclick="window.print()">Print / Save as PDF</button>
+        <button class="btn-secondary" onclick="exportText()">Export as text</button>
+        <button class="btn-secondary" onclick="restart()">Start over</button>
+      </div>
+    </div>
+    <div class="warning" style="margin-top:24px">
+      Note: Ground cost above excludes transatlantic flights (use Amex MR for LAX↔Europe),
+      food (~$100–150/day for 4), and activities. Lodging estimates are mid-range; Amex FHR
+      hotels in Venice and Dubrovnik include $100 property credits + perks.
+    </div>
+  `;
+
+  return html;
+}
+
+/* =========================================================
+   INTERACTIONS
+   ========================================================= */
+
+function setNights(n) {
+  journey[journey.length - 1].nights = n;
+  saveState();
+  render();
+}
+
+function chooseLeg(nextStop, legIdx, legKey) {
+  const leg = LEGS[legKey][legIdx];
+  const isEnd = nextStop === 'dubrovnik';
+  journey.push({
+    stop: nextStop,
+    nights: isEnd ? Math.max(1, nightsRemaining()) : 2,
+    legIn: { ...leg, fromTo: legKey },
+  });
+  const rem = nightsRemaining();
+  if (rem < 0) {
+    journey[journey.length - 1].nights = Math.max(1, journey[journey.length - 1].nights + rem);
+  }
+  saveState();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  render();
+}
+
+function undoLast() {
+  if (journey.length > 1) {
+    journey.pop();
+    saveState();
+    render();
+  }
+}
+
+function restart() {
+  if (!confirm('Start over? Your price overrides will be kept but the route will reset.')) return;
+  journey = [{ stop: 'venice', nights: 1, legIn: null }];
+  saveState();
+  render();
+}
+
+function exportText() {
+  const totals = computeTotals();
+  let text = `CROATIA TRIP — JULY 17–28, 2026\n`;
+  text += `4 travelers · LAX ↔ Venice/Dubrovnik\n`;
+  text += `${'='.repeat(55)}\n\n`;
+  journey.forEach((j, i) => {
+    const s = STOPS[j.stop];
+    const perNight = getLodgePerNight(j.stop);
+    const lodgeOv = overrides[lodgeKey(j.stop)] != null && overrides[lodgeKey(j.stop)] !== '';
+    text += `${String(i + 1).padStart(2, '0')}. ${s.name.toUpperCase()} — ${j.nights} night${j.nights !== 1 ? 's' : ''}\n`;
+    if (j.legIn) {
+      const legOv = overrides[legKey(j.legIn.fromTo || '', j.legIn.mode)] != null &&
+                    overrides[legKey(j.legIn.fromTo || '', j.legIn.mode)] !== '';
+      const transitCost = getLegTotalCost(j.legIn.fromTo || '', j.legIn);
+      text += `    Arriving by ${j.legIn.mode}: ${j.legIn.desc} (${j.legIn.time}h, $${transitCost.toLocaleString()} ${legOv ? '[CONFIRMED]' : '[est.]'})\n`;
+    }
+    text += `    Lodging: ${s.lodgingNote} — $${perNight}/night ${lodgeOv ? '[CONFIRMED]' : '[est.]'}\n\n`;
+  });
+  text += `${'='.repeat(55)}\n`;
+  text += `TOTAL: ${totals.nights} nights · ${totals.hours.toFixed(1)} transit hours · $${totals.cost.toLocaleString()} (4 pax ground cost)\n`;
+  text += `(Excludes transatlantic flights, food, activities)\n`;
+
+  navigator.clipboard.writeText(text).then(() => {
+    alert('Itinerary copied to clipboard!');
+  }).catch(() => {
+    const blob = new Blob([text], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'croatia-itinerary.txt';
+    a.click();
+  });
+}
+
+/* Init */
+render();
+</script>
+</body>
+</html>
