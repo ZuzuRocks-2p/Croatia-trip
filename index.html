@@ -1036,6 +1036,152 @@
     margin: 24px 0 8px;
   }
 
+  .daytrips-section {
+    margin: 32px 0 8px;
+  }
+
+  .daytrips-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    font-weight: 500;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .daytrips-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+
+  .daytrips-sub {
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-style: italic;
+    margin-bottom: 14px;
+  }
+
+  .daytrips-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  .daytrip-card {
+    background: var(--paper);
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1.5px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: all .2s ease;
+    position: relative;
+  }
+
+  .daytrip-card:hover {
+    border-color: var(--sea);
+    transform: translateY(-1px);
+  }
+
+  .daytrip-card.selected {
+    border-color: var(--green, #2c5f2c);
+    background: #f0f7ed;
+  }
+
+  .daytrip-img-wrap {
+    position: relative;
+  }
+
+  .daytrip-img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    display: block;
+    background: var(--paper-dark);
+  }
+
+  .daytrip-toggle {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(255,255,255,0.95);
+    color: var(--ink);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+    border: 1px solid var(--line);
+  }
+
+  .daytrip-card.selected .daytrip-toggle {
+    background: var(--green, #2c5f2c);
+    color: white;
+    border-color: var(--green, #2c5f2c);
+  }
+
+  .daytrip-body {
+    padding: 12px 14px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .daytrip-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 15px;
+    margin-bottom: 6px;
+    line-height: 1.25;
+  }
+
+  .daytrip-desc {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    margin-bottom: 10px;
+    flex: 1;
+  }
+
+  .daytrip-meta {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink);
+    border-top: 1px dashed var(--line);
+    padding-top: 8px;
+    margin-bottom: 8px;
+  }
+
+  .daytrip-meta em {
+    font-style: normal;
+    color: var(--ink-muted);
+    font-size: 9.5px;
+  }
+
+  .daytrip-sources {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    border-top: 1px dashed var(--line);
+    padding-top: 8px;
+  }
+
+  .daytrip-sources .source-link {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+
   .mustsee-label {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
@@ -1197,6 +1343,7 @@
 
   @media (max-width: 720px) {
     .mustsee-grid { grid-template-columns: 1fr; }
+    .daytrips-grid { grid-template-columns: 1fr; }
     .guide-hero-name { font-size: 32px; }
     .container { padding: 32px 20px 60px; }
     .dashboard { grid-template-columns: 1fr 1fr; }
@@ -1228,7 +1375,7 @@
    ========================================================= */
 
 const TRAVELERS = 4;
-const TOTAL_NIGHTS = 10;  // July 17-28 = 11 nights; reserve 1 for return flight
+const TOTAL_NIGHTS = 12;  // July 11-24, 2026: land Venice 1:45pm Jul 11, depart Dubrovnik 6am Jul 24 = 12 nights
 
 /* =========================================================
    PRESET ROUTES - pre-built itineraries users can start from
@@ -1241,22 +1388,22 @@ const PRESETS = {
     icon: '★',
     legs: [
       { stop: 'venice', nights: 1, leg: null },
-      { stop: 'split', nights: 4, leg: 'Fly' },
+      { stop: 'split', nights: 5, leg: 'Fly' },
       { stop: 'hvar', nights: 2, leg: 'Catamaran' },
-      { stop: 'dubrovnik', nights: 3, leg: 'Catamaran' },
+      { stop: 'dubrovnik', nights: 4, leg: 'Catamaran' },
     ],
   },
   sailing: {
     name: 'By Sea',
     tagline: 'Skippered yacht charter — sleep on the water, wake in a new bay',
-    desc: 'Fly into Venice, train down to Split, then board a skippered catamaran for 5 nights island-hopping (Hvar, Brač, Korčula, Mljet) before docking in Dubrovnik. Captain handles the sailing — you handle the swimming. Boat charter ~€4,000-5,000/week for 4 with skipper.',
+    desc: 'Fly into Venice, train down to Split, then board a skippered catamaran for 7 nights island-hopping (Hvar, Brač, Korčula, Mljet) before docking in Dubrovnik. Captain handles the sailing — you handle the swimming. Boat charter ~€4,000-5,000/week for 4 with skipper.',
     icon: '⛵',
     legs: [
       { stop: 'venice', nights: 1, leg: null },
       { stop: 'split', nights: 2, leg: 'Fly' },
-      { stop: 'hvar', nights: 1, leg: 'Catamaran' },
+      { stop: 'hvar', nights: 2, leg: 'Catamaran' },
       { stop: 'brac', nights: 1, leg: 'Catamaran' },
-      { stop: 'korcula', nights: 1, leg: 'Catamaran' },
+      { stop: 'korcula', nights: 2, leg: 'Catamaran' },
       { stop: 'mljet', nights: 1, leg: 'Catamaran' },
       { stop: 'dubrovnik', nights: 3, leg: 'Catamaran' },
     ],
@@ -1270,8 +1417,8 @@ const PRESETS = {
       { stop: 'venice', nights: 1, leg: null },
       { stop: 'zadar', nights: 1, leg: 'Drive' },
       { stop: 'plitvice', nights: 1, leg: 'Drive' },
-      { stop: 'split', nights: 2, leg: 'Drive' },
-      { stop: 'hvar', nights: 2, leg: 'Catamaran' },
+      { stop: 'split', nights: 3, leg: 'Drive' },
+      { stop: 'hvar', nights: 3, leg: 'Catamaran' },
       { stop: 'dubrovnik', nights: 3, leg: 'Catamaran' },
     ],
   },
@@ -1293,28 +1440,10 @@ const STOPS = {
     lodgingNote: 'Amex FHR — Gritti, Danieli, or St. Regis with $100 credit',
     lodgingSources: [
       { label: 'Amex FHR', url: 'https://www.amextravel.com/hotel-search-results?location=Venice%2C%20Italy&programs=FHR' },
-      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Venice%2C+Italy&checkin=2026-07-17&checkout=2026-07-18&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
+      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Venice%2C+Italy&checkin=2026-07-11&checkout=2026-07-12&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
     ],
     fixed: true,
     position: 'start',
-  },
-  trieste: {
-    name: 'Trieste',
-    country: 'Italy',
-    blurb: 'Hemingway\'s seafront city — faded Habsburg grandeur, great coffee.',
-    bestFor: 'Travelers who love literary, faded-empire cities with excellent coffee and almost no crowds.',
-    heroKeyword: 'Trieste-Panorama.jpg',
-    mustSee: [
-      { title: 'Piazza Unità d\'Italia', desc: 'The largest sea-facing square in Europe — Habsburg architecture opening right to the Adriatic. Pure drama at sunset.', img: "Trieste-Piazza_Unità_d'Italia-DSCF1423.JPG" },
-      { title: 'Miramare Castle', desc: 'A white fairytale castle on a cliff, built by Archduke Maximilian. Gardens are free; inside tour is €12.', img: 'Rocks_at_Miramare_Castle.JPG' },
-      { title: 'Historic literary cafés', desc: 'Caffè San Marco and Antico Caffè degli Specchi — Joyce and Svevo drank here. Order a capo in b (cappuccino in a glass).', img: '20140402_sanmarco_gallery_005_web.jpg' },
-    ],
-    lodgingPerNight: 250,
-    lodgingNote: 'Boutique hotel or apartment',
-    lodgingSources: [
-      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Trieste%2C+Italy&checkin=2026-07-18&checkout=2026-07-19&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
-      { label: 'Airbnb', url: 'https://www.airbnb.com/s/Trieste--Italy/homes?checkin=2026-07-18&checkout=2026-07-19&adults=2&children=2' },
-    ],
   },
   pula: {
     name: 'Pula',
@@ -1330,8 +1459,8 @@ const STOPS = {
     lodgingPerNight: 220,
     lodgingNote: 'Boutique hotel; Park Plaza or similar',
     lodgingSources: [
-      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Pula%2C+Croatia&checkin=2026-07-18&checkout=2026-07-19&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
-      { label: 'Airbnb', url: 'https://www.airbnb.com/s/Pula--Croatia/homes?checkin=2026-07-18&checkout=2026-07-19&adults=2&children=2' },
+      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Pula%2C+Croatia&checkin=2026-07-12&checkout=2026-07-13&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
+      { label: 'Airbnb', url: 'https://www.airbnb.com/s/Pula--Croatia/homes?checkin=2026-07-12&checkout=2026-07-13&adults=2&children=2' },
     ],
   },
   rovinj: {
@@ -1348,7 +1477,7 @@ const STOPS = {
     lodgingPerNight: 320,
     lodgingNote: 'Maistra properties; Hotel Monte Mulini or Adriatic',
     lodgingSources: [
-      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Rovinj%2C+Croatia&checkin=2026-07-19&checkout=2026-07-20&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
+      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Rovinj%2C+Croatia&checkin=2026-07-13&checkout=2026-07-14&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
       { label: 'Maistra', url: 'https://www.maistra.com/' },
     ],
   },
@@ -1366,8 +1495,8 @@ const STOPS = {
     lodgingPerNight: 230,
     lodgingNote: 'Old town apartment or Art Hotel Kalelarga',
     lodgingSources: [
-      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Zadar%2C+Croatia&checkin=2026-07-19&checkout=2026-07-20&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
-      { label: 'Airbnb', url: 'https://www.airbnb.com/s/Zadar--Croatia/homes?checkin=2026-07-19&checkout=2026-07-20&adults=2&children=2' },
+      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Zadar%2C+Croatia&checkin=2026-07-13&checkout=2026-07-14&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
+      { label: 'Airbnb', url: 'https://www.airbnb.com/s/Zadar--Croatia/homes?checkin=2026-07-13&checkout=2026-07-14&adults=2&children=2' },
     ],
   },
   plitvice: {
@@ -1386,7 +1515,7 @@ const STOPS = {
     lodgingNote: 'Hotel Jezero inside park OR Plitvice Ethno Houses nearby',
     lodgingSources: [
       { label: 'Hotel Jezero', url: 'https://np-plitvicka-jezera.hr/en/accommodation/hotel-jezero/' },
-      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Plitvice+Lakes%2C+Croatia&checkin=2026-07-20&checkout=2026-07-21&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
+      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Plitvice+Lakes%2C+Croatia&checkin=2026-07-14&checkout=2026-07-15&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
     ],
   },
   split: {
@@ -1403,8 +1532,50 @@ const STOPS = {
     lodgingPerNight: 280,
     lodgingNote: 'Old Town apartment/villa; Airbnb for a family of 4',
     lodgingSources: [
-      { label: 'Airbnb', url: 'https://www.airbnb.com/s/Split--Croatia/homes?checkin=2026-07-20&checkout=2026-07-22&adults=2&children=2' },
-      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Split%2C+Croatia&checkin=2026-07-20&checkout=2026-07-22&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
+      { label: 'Airbnb', url: 'https://www.airbnb.com/s/Split--Croatia/homes?checkin=2026-07-14&checkout=2026-07-16&adults=2&children=2' },
+      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Split%2C+Croatia&checkin=2026-07-14&checkout=2026-07-16&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
+    ],
+    dayTrips: [
+      {
+        id: 'split-boat-bluelagoon',
+        title: 'Private boat: Trogir + Blue Lagoon + Šolta',
+        desc: 'Skippered speedboat day — UNESCO Trogir for coffee, the turquoise Blue Lagoon (Krknjaši) for swimming, then lunch on Šolta. ~7 hours, returns to Split. Best done on day 2 in case of weather.',
+        cost: 800,
+        time: 7,
+        costNote: 'flat for boat, family of 4',
+        img: 'Aerial_view_of_Zlatni_rat_(Golden_Horn)_Beach_in_Bol,_Croatia_(48608813081).jpg',
+        sources: [
+          { label: 'Mayer Charter', url: 'https://www.mayer-charter.com/boat-tours-split-trogir/blue-lagoon-solta-boat-excursion/' },
+          { label: 'Croatia Private Tours (€1,350 fixed)', url: 'https://www.croatia-private-tours.com/blue-lagoon-private-boat-tour-from-split/' },
+          { label: 'Adriatica Charter', url: 'https://www.adriatica-charter.com/boat_day_tour_blue_lagoon_beach_island_solta_croatia.html' },
+        ],
+      },
+      {
+        id: 'split-krka',
+        title: 'Krka National Park',
+        desc: 'Less crowded than Plitvice, and you can swim under Skradinski Buk waterfall. 1h drive from Split or join a group tour.',
+        cost: 200,
+        time: 8,
+        costNote: 'rental car + park fees, 4 pax',
+        img: 'Skradinski_Buk.jpg',
+        sources: [
+          { label: 'Krka NP tickets', url: 'https://www.npkrka.hr/en/' },
+          { label: 'GetYourGuide tours', url: 'https://www.getyourguide.com/krka-national-park-l1148/' },
+        ],
+      },
+      {
+        id: 'split-plitvice',
+        title: 'Plitvice Lakes (long day)',
+        desc: 'Doable as a day trip but it\'s a 3.5h drive each way — leave at 6am, back by 9pm. Better as an overnight if you have the day. Tour buses make it easier.',
+        cost: 320,
+        time: 14,
+        costNote: 'group tour or rental car + tickets',
+        img: 'Plitvice_Lakes,_Galovac_Waterfall.JPG',
+        sources: [
+          { label: 'GetYourGuide Plitvice tours', url: 'https://www.getyourguide.com/split-l85/plitvice-lakes-tc52/' },
+          { label: 'Plitvice tickets', url: 'https://www.np-plitvicka-jezera.hr/en/' },
+        ],
+      },
     ],
     fixed: true,
     position: 'middle',
@@ -1425,7 +1596,7 @@ const STOPS = {
     lodgingSources: [
       { label: 'Maslina Resort', url: 'https://maslinaresort.com/' },
       { label: 'Amex FHR', url: 'https://www.amextravel.com/hotel-search-results?location=Hvar%2C%20Croatia&programs=FHR' },
-      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Hvar%2C+Croatia&checkin=2026-07-22&checkout=2026-07-25&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
+      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Hvar%2C+Croatia&checkin=2026-07-16&checkout=2026-07-19&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
     ],
   },
   brac: {
@@ -1442,8 +1613,8 @@ const STOPS = {
     lodgingPerNight: 280,
     lodgingNote: 'Villa in Bol or Supetar; boutique hotel options',
     lodgingSources: [
-      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Bol%2C+Brac%2C+Croatia&checkin=2026-07-22&checkout=2026-07-24&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
-      { label: 'Airbnb', url: 'https://www.airbnb.com/s/Brac-Island--Croatia/homes?checkin=2026-07-22&checkout=2026-07-24&adults=2&children=2' },
+      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Bol%2C+Brac%2C+Croatia&checkin=2026-07-16&checkout=2026-07-18&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
+      { label: 'Airbnb', url: 'https://www.airbnb.com/s/Brac-Island--Croatia/homes?checkin=2026-07-16&checkout=2026-07-18&adults=2&children=2' },
     ],
   },
   korcula: {
@@ -1460,7 +1631,7 @@ const STOPS = {
     lodgingPerNight: 240,
     lodgingNote: 'Old town apartment or Lesic Dimitri Palace',
     lodgingSources: [
-      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Korcula%2C+Croatia&checkin=2026-07-23&checkout=2026-07-25&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
+      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Korcula%2C+Croatia&checkin=2026-07-17&checkout=2026-07-19&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
       { label: 'Lesic Dimitri', url: 'https://www.lesic-dimitri.com/' },
     ],
   },
@@ -1478,7 +1649,7 @@ const STOPS = {
     lodgingPerNight: 200,
     lodgingNote: 'Pomena or Polace village guesthouses',
     lodgingSources: [
-      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Mljet%2C+Croatia&checkin=2026-07-24&checkout=2026-07-25&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
+      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Mljet%2C+Croatia&checkin=2026-07-18&checkout=2026-07-19&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
     ],
   },
   dubrovnik: {
@@ -1497,7 +1668,7 @@ const STOPS = {
     lodgingSources: [
       { label: 'Amex FHR', url: 'https://www.amextravel.com/hotel-search-results?location=Dubrovnik%2C%20Croatia&programs=FHR' },
       { label: 'Villa Dubrovnik', url: 'https://www.villa-dubrovnik.hr/' },
-      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Dubrovnik%2C+Croatia&checkin=2026-07-25&checkout=2026-07-28&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
+      { label: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=Dubrovnik%2C+Croatia&checkin=2026-07-19&checkout=2026-07-22&group_adults=2&group_children=2&age=15&age=17&no_rooms=1' },
     ],
     fixed: true,
     position: 'end',
@@ -1525,17 +1696,13 @@ async function hydrateWikiImages() {}
 
 const LEGS = {
   // From Venice
-  'venice->trieste': [
-    { mode: 'Train', desc: 'Frecciarossa or regional train', time: 2.0, cost: 40, shared: false, pros: ['Fast, frequent, no transfers','Scenic Adriatic coastline views'], cons: ['Not as memorable as a boat'] },
-    { mode: 'Drive', desc: 'Rental car, ~160km', time: 2.5, cost: 120, shared: true, pros: ['Flexibility to stop in Aquileia (Roman ruins)'], cons: ['Parking hassles in both cities'] },
-  ],
   'venice->pula': [
-    { mode: 'Ferry', desc: 'Kompas catamaran, high-speed', time: 3.5, cost: 130, shared: false, pros: ['Iconic Adriatic crossing','No airport hassle','Foot-passenger only (easy boarding)'], cons: ['€500+ for 4 people','Once daily, afternoons only','Seasonal only'] },
+    { mode: 'Ferry', desc: 'Adriatic Lines catamaran (Prince of Venice / Anđela), departs San Basilio ~16:30-17:00, arrives Pula evening', time: 4.0, cost: 90, shared: false, pros: ['Iconic Adriatic crossing','No airport hassle','Foot-passenger only (easy boarding)','High-speed catamaran (35 knots)'], cons: ['~€340 for 4','Once daily, late-afternoon only','Seasonal (May-Oct)','No cars allowed'] },
     { mode: 'Drive', desc: 'Via Trieste, 260km', time: 4.0, cost: 200, shared: true, pros: ['Stop in Trieste or Piran (Slovenia) en route','Flexibility'], cons: ['Long day behind the wheel','Border crossing'] },
     { mode: 'Fly', desc: 'Via VIE or ZAG (1 stop)', time: 5.0, cost: 220, shared: false, pros: ['Covered by points possibly'], cons: ['No direct; connection required','Airport transfers eat the time savings'] },
   ],
   'venice->rovinj': [
-    { mode: 'Ferry', desc: 'Venezia Lines catamaran', time: 3.75, cost: 110, shared: false, pros: ['Direct seasonal crossing','Deposits you in the prettiest Istrian town'], cons: ['Summer only, limited schedule','€440 for 4'] },
+    { mode: 'Ferry', desc: 'Adriatic Lines catamaran, departs San Basilio ~17:00, arrives Rovinj ~20:00', time: 3.0, cost: 90, shared: false, pros: ['Direct seasonal crossing','Deposits you in the prettiest Istrian town','Fastest Venice→Croatia ferry'], cons: ['Up to 7×/week May-Oct','€316-356 for 4','Late-afternoon departure means evening arrival'] },
     { mode: 'Drive', desc: 'Via Trieste + Pula, 280km', time: 4.5, cost: 220, shared: true, pros: ['Stop anywhere along Istria'], cons: ['Long drive, border crossing'] },
   ],
   'venice->split': [
@@ -1545,18 +1712,6 @@ const LEGS = {
   'venice->zadar': [
     { mode: 'Fly', desc: 'Via VIE, FRA or MUC (1 stop)', time: 5.0, cost: 250, shared: false, pros: ['Puts you close to Plitvice'], cons: ['Always requires a connection','Can take most of a day'] },
     { mode: 'Drive', desc: 'Via Trieste, 550km', time: 7.5, cost: 350, shared: true, pros: ['See Istria en route'], cons: ['Very long driving day','Border crossing'] },
-  ],
-
-  // From Trieste
-  'trieste->pula': [
-    { mode: 'Drive', desc: 'Via Koper, 110km', time: 2.0, cost: 100, shared: true, pros: ['Short, scenic drive through Slovenia','Stop in Piran — a hidden gem'], cons: ['Border crossings (2x)'] },
-    { mode: 'Bus', desc: 'FlixBus direct', time: 2.5, cost: 25, shared: false, pros: ['Cheap, simple'], cons: ['Less comfort; border waits'] },
-  ],
-  'trieste->rovinj': [
-    { mode: 'Drive', desc: '145km via Koper', time: 2.5, cost: 130, shared: true, pros: ['Stop in Piran or Portorož'], cons: ['Border crossings'] },
-  ],
-  'trieste->zadar': [
-    { mode: 'Drive', desc: '450km coastal highway', time: 5.5, cost: 280, shared: true, pros: ['Can split over 2 days with Pula stop'], cons: ['Long drive'] },
   ],
 
   // From Pula
@@ -1662,8 +1817,7 @@ const LEGS = {
 
 /* Which stops can follow a given stop, in logical geographic order */
 const ADJACENCY = {
-  venice: ['trieste','pula','rovinj','zadar','split'],
-  trieste: ['pula','rovinj','zadar'],
+  venice: ['pula','rovinj','zadar','split'],
   pula: ['rovinj','zadar','split'],
   rovinj: ['zadar','plitvice','split'],  // skip pula if already went direct
   zadar: ['plitvice','split'],
@@ -1681,7 +1835,7 @@ const ADJACENCY = {
    ========================================================= */
 
 const CITY_IATA = {
-  venice: 'VCE', trieste: 'TRS', pula: 'PUY', rovinj: 'PUY',
+  venice: 'VCE', pula: 'PUY', rovinj: 'PUY',
   zadar: 'ZAD', plitvice: 'ZAD', split: 'SPU', hvar: 'SPU',
   brac: 'BWK', korcula: 'DBV', mljet: 'DBV', dubrovnik: 'DBV',
 };
@@ -1690,7 +1844,7 @@ function sourceForLeg(legKey, mode) {
   const [from, to] = legKey.split('->');
   const fromCode = CITY_IATA[from];
   const toCode = CITY_IATA[to];
-  const dateParam = '2026-07-20';  // mid-trip placeholder
+  const dateParam = '2026-07-17';  // mid-trip placeholder (July 11-24)
 
   const m = mode.toLowerCase();
 
@@ -1792,9 +1946,24 @@ function setOverride(key, value) {
   render();
 }
 
+function toggleDayTrip(stopIdx, tripId) {
+  if (stopIdx < 0 || stopIdx >= journey.length) return;
+  const j = journey[stopIdx];
+  if (!j.dayTrips) j.dayTrips = [];
+  const i = j.dayTrips.indexOf(tripId);
+  if (i >= 0) {
+    j.dayTrips.splice(i, 1);
+  } else {
+    j.dayTrips.push(tripId);
+  }
+  saveState();
+  render();
+}
+
 function computeTotals() {
   let lodgingCost = 0;
   let transitCost = 0;
+  let dayTripCost = 0;
   let nights = 0;
   let hours = 0;
   journey.forEach(j => {
@@ -1805,8 +1974,19 @@ function computeTotals() {
       const fromTo = j.legIn.fromTo || '';
       transitCost += getLegTotalCost(fromTo, j.legIn);
     }
+    // Day trips selected for this stop
+    const selectedTrips = j.dayTrips || [];
+    const stopData = STOPS[j.stop];
+    const availableTrips = (stopData && stopData.dayTrips) || [];
+    selectedTrips.forEach(tripId => {
+      const trip = availableTrips.find(t => t.id === tripId);
+      if (trip) {
+        dayTripCost += trip.cost;
+        hours += trip.time;
+      }
+    });
   });
-  return { cost: lodgingCost + transitCost, lodgingCost, transitCost, nights, hours };
+  return { cost: lodgingCost + transitCost + dayTripCost, lodgingCost, transitCost, dayTripCost, nights, hours };
 }
 
 function nightsRemaining() {
@@ -1837,7 +2017,7 @@ function render() {
 
   let html = `
     <header>
-      <div class="eyebrow">July 17 — 28, 2026 · Four travelers</div>
+      <div class="eyebrow">July 11 — 24, 2026 · Four travelers</div>
       <h1>The <em>Adriatic</em> Route</h1>
       <p class="sub">Build the trip one leg at a time. Every price has a <span style="color:var(--sea);font-style:normal">↗ source link</span> to check live pricing, plus an override field to lock in confirmed quotes.</p>
     </header>
@@ -1850,6 +2030,9 @@ function render() {
           ${PRESETS[key].name}
         </button>
       `).join('')}
+      <a href="lodging_guide.html" target="_blank" class="preset-pill" style="text-decoration:none;">
+        <span class="icon">🛏</span>Lodging picks
+      </a>
     </div>
 
     <div class="dashboard">
@@ -1979,6 +2162,40 @@ function renderCurrentDecision(remaining) {
               </div>
             </div>
           `).join('')}
+        </div>
+      </div>
+    ` : ''}
+
+    ${stopData.dayTrips && stopData.dayTrips.length ? `
+      <div class="daytrips-section">
+        <div class="daytrips-label">Day trips from ${stopData.name}</div>
+        <div class="daytrips-sub">Optional excursions that return to ${stopData.name} (don't add nights — only cost &amp; time)</div>
+        <div class="daytrips-grid">
+          ${stopData.dayTrips.map(trip => {
+            const stopIdx = journey.length - 1;
+            const selected = (last.dayTrips || []).includes(trip.id);
+            return `
+              <div class="daytrip-card ${selected ? 'selected' : ''}" onclick="toggleDayTrip(${stopIdx}, '${trip.id}')">
+                <div class="daytrip-img-wrap">
+                  <img class="daytrip-img" src="${wikiImg(trip.img, 500)}" alt="${trip.title}" loading="lazy" onerror="this.style.display='none'">
+                  <div class="daytrip-toggle">${selected ? '✓ Added' : '+ Add'}</div>
+                </div>
+                <div class="daytrip-body">
+                  <div class="daytrip-title">${trip.title}</div>
+                  <div class="daytrip-desc">${trip.desc}</div>
+                  <div class="daytrip-meta">
+                    <span>$${trip.cost.toLocaleString()} <em>${trip.costNote}</em></span>
+                    <span>${trip.time}h</span>
+                  </div>
+                  ${trip.sources && trip.sources.length ? `
+                    <div class="daytrip-sources" onclick="event.stopPropagation()">
+                      ${trip.sources.map(s => `<a href="${s.url}" target="_blank" class="source-link">↗ ${s.label}</a>`).join('')}
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+            `;
+          }).join('')}
         </div>
       </div>
     ` : ''}
@@ -2146,7 +2363,6 @@ function isRecommended(from, to) {
     plitvice: 'split',
     pula: 'split',
     rovinj: 'zadar',
-    trieste: 'pula',
     brac: 'hvar',
     korcula: 'dubrovnik',
     mljet: 'dubrovnik',
@@ -2159,7 +2375,7 @@ function renderFinal() {
   let html = `
     <div class="final" id="finalPlan">
       <div class="final-title">Your <em>Itinerary</em></div>
-      <div class="final-sub">Croatia · July 17–28, 2026 · Four travelers · Building on Amex + Chase points</div>
+      <div class="final-sub">Croatia · July 11–24, 2026 · Four travelers · Building on Amex + Chase points</div>
   `;
 
   journey.forEach((j, i) => {
@@ -2177,6 +2393,13 @@ function renderFinal() {
     const lodgingCost = perNight * j.nights;
     const transitCost = j.legIn ? getLegTotalCost(j.legIn.fromTo || '', j.legIn) : 0;
 
+    // Day trips selected at this stop
+    const selectedTripIds = j.dayTrips || [];
+    const availableTrips = (s.dayTrips) || [];
+    const selectedTrips = selectedTripIds.map(id => availableTrips.find(t => t.id === id)).filter(Boolean);
+    const dayTripCost = selectedTrips.reduce((sum, t) => sum + t.cost, 0);
+    const dayTripDetail = selectedTrips.length ? `<div class="leg-detail" style="margin-top:6px"><em>Day trips:</em> ${selectedTrips.map(t => t.title).join(' · ')}</div>` : '';
+
     const lodgeTag = lodgeOverride ? '<span style="color:var(--green);font-size:10px">✓</span>' : '<span style="color:var(--ink-muted);font-size:10px">est.</span>';
     const transitTag = legOverride ? '<span style="color:var(--green);font-size:10px">✓</span>' : (j.legIn ? '<span style="color:var(--ink-muted);font-size:10px">est.</span>' : '');
 
@@ -2187,10 +2410,11 @@ function renderFinal() {
           <div class="leg-loc">${s.name} <button class="edit-stop-btn" onclick="editFromStop(${i})" title="Re-pick stops from here">✎ edit</button></div>
           ${transitDetail}
           <div class="leg-detail">${detail}</div>
+          ${dayTripDetail}
         </div>
         <div class="leg-cost">
-          $${(lodgingCost + transitCost).toLocaleString()}
-          <span class="sub">lodge $${lodgingCost.toLocaleString()} ${lodgeTag}${transitCost ? ` · transit $${transitCost.toLocaleString()} ${transitTag}` : ''}</span>
+          $${(lodgingCost + transitCost + dayTripCost).toLocaleString()}
+          <span class="sub">lodge $${lodgingCost.toLocaleString()} ${lodgeTag}${transitCost ? ` · transit $${transitCost.toLocaleString()} ${transitTag}` : ''}${dayTripCost ? ` · day trips $${dayTripCost.toLocaleString()}` : ''}</span>
         </div>
       </div>
     `;
