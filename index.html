@@ -1582,6 +1582,9 @@ const LEGS = {
     { mode: 'Drive', desc: '540km, plan overnight stop', time: 6.5, cost: 400, shared: true, pros: ['Can split with Plitvice or Zadar stop'], cons: ['Very long day'] },
     { mode: 'Fly', desc: 'From Pula airport', time: 2.5, cost: 180, shared: false, pros: ['Faster'], cons: ['30-min drive to Pula airport first'] },
   ],
+  'rovinj->plitvice': [
+    { mode: 'Drive', desc: '290km, 4 hours via Rijeka', time: 4.0, cost: 200, shared: true, pros: ['Direct route to the lakes','Skip the Zadar detour if waterfalls are the priority'], cons: ['Long inland drive','Need rental car'] },
+  ],
 
   // From Zadar
   'zadar->plitvice': [
@@ -1662,7 +1665,7 @@ const ADJACENCY = {
   venice: ['trieste','pula','rovinj','zadar','split'],
   trieste: ['pula','rovinj','zadar'],
   pula: ['rovinj','zadar','split'],
-  rovinj: ['zadar','split'],  // skip pula if already went direct
+  rovinj: ['zadar','plitvice','split'],  // skip pula if already went direct
   zadar: ['plitvice','split'],
   plitvice: ['split','zadar'],
   split: ['hvar','brac','korcula','dubrovnik'],
